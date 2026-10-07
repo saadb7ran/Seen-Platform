@@ -1,0 +1,202 @@
+// Prisma Schema for Seen Academic Assessment Engine (منصة سين)
+// Supports PostgreSQL with complete Enums, Relations, Indexes, and Constraints.
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+// -------------------------------------------------------------
+// ENUMS (المعايير المحددة لمنظومة تقييم مهارات اللغة الإنجليزية)
+// -------------------------------------------------------------
+
+enum UserRole {
+  STUDENT  // طالبة
+  TEACHER  // معلمة
+  ADMIN    // إدارة أكاديمية ومراقبة
+}
+
+enum CefrLevel {
+  A1 // مبتدئ أساسي (0% - 39%)
+  A2 // مبتدئ متقدم (40% - 59%)
+  B1 // متوسط (60% - 79%)
+  B2 // فوق المتوسط (80% - 100%)
+}
+
+enum SkillType {
+  LISTENING // مهارة الاستماع
+  SPEAKING  // مهارة التحدث
+  READING   // مهارة القراءة
+  WRITING   // مهارة الكتابة
+}
+
+enum QuestionType {
+  MCQ             // اختيار من متعدد (Listening / Reading)
+  AUDIO_PROMPT    // محفز صوتي لتسجيل التحدث (Speaking)
+  ESSAY           // تعبير مقالي وكتابي (Writing)
+  READING_PASSAGE // استيعاب المقروء مع أسئلة فرعية
+}
+
+enum TestStatus {
+  DRAFT     // مسودة قيد الإعداد
+  ACTIVE    // نشط ومتاح للطالبات
+  COMPLETED // منتهي ومغلق
+}
+
+enum SessionStatus {
+  IN_PROGRESS // جلسة جارية حالياً
+  SUBMITTED   // تم تسليم الاختبار
+  GRADED      // تم اعتماد التصحيح الآلي ورصد مستوى CEFR
+}
+
+// -------------------------------------------------------------
+// MODELS (جداول قاعدة البيانات مع كامل العلاقات والفهارس)
+// -------------------------------------------------------------
+
+/// 1. جدول المستخدمين (Users): إدارة حسابات الطالبات والمعلمات والإدارة
+model User {
+  id           String    @id @default(uuid()) @db.Uuid
+  username     String    @unique @db.VarChar(100)
+  passwordHash String    @map("password_hash") @db.VarChar(255)
+  fullName     String    @map("full_name") @db.VarChar(255)
+  role         UserRole  @default(STUDENT)
+  gradeLevel   Int?      @map("grade_level") // مثل 10، 11، 12 للمرحلة الثانوية
+  schoolId     String?   @map("school_id") @db.VarChar(64) // معرف المدرسة
+  createdAt    DateTime  @default(now()) @map("created_at")
+  updatedAt    DateTime  @updatedAt @map("updated_at")
+
+  // العلاقات
+  createdTests Test[]               @relation("TeacherCreatedTests")
+  testSessions StudentTestSession[] @relation("StudentSessions")
+
+  @@index([role])
+  @@index([schoolId])
+  @@map("users")
+}
+
+/// 2. بنك الأسئلة (QuestionBank): الأسئلة المصنفة حسب المهارة ومستويات CEFR
+model QuestionBank {
+  id              String       @id @default(uuid()) @db.Uuid
+  skill           SkillType
+  questionType    QuestionType @map("question_type")
+  contentText     String       @map("content_text") @db.Text
+  mediaUrl        String?      @map("media_url") @db.VarChar(512) // رابط ملف صوت الاستماع S3/Supabase
+  optionsJson     Json?        @map("options_json") // خيارات الـ MCQ
+  correctAnswer   String?      @map("correct_answer") @db.VarChar(255)
+  difficultyLevel CefrLevel    @map("difficulty_level") // تصنيف CEFR (A1, A2, B1, B2)
+  points          Decimal      @default(1.0) @db.Decimal(5, 2)
+  rubricJson      Json?        @map("rubric_json") // معايير التحليل الآلي للـ Speaking والـ Writing
+  createdAt       DateTime     @default(now()) @map("created_at")
+  updatedAt       DateTime     @updatedAt @map("updated_at")
+
+  // العلاقات
+  testQuestions TestQuestion[]
+  studentAnswers StudentAnswer[]
+
+  @@index([skill, difficultyLevel])
+  @@map("question_bank")
+}
+
+/// 3. الاختبارات (Tests): جلسات الاختبار المجدولة مع مفاتيح الوصول ورموز QR
+model Test {
+  id              String      @id @default(uuid()) @db.Uuid
+  title           String      @db.VarChar(255)
+  createdById     String      @map("created_by") @db.Uuid
+  startTime       DateTime    @map("start_time")
+  endTime         DateTime    @map("end_time")
+  durationMinutes Int         @map("duration_minutes")
+  accessCode      String      @unique @map("access_code") @db.VarChar(50) // رمز الدخول السريع (PIN)
+  qrCodeUrl       String?     @map("qr_code_url") @db.VarChar(512)
+  isRandomized    Boolean     @default(true) @map("is_randomized") // تفعيل التوليد العشوائي للأسئلة
+  status          TestStatus  @default(DRAFT)
+  createdAt       DateTime    @default(now()) @map("created_at")
+  updatedAt       DateTime    @updatedAt @map("updated_at")
+
+  // العلاقات
+  creator       User                 @relation("TeacherCreatedTests", fields: [createdById], references: [id], onDelete: Restrict)
+  testQuestions TestQuestion[]
+  sessions      StudentTestSession[]
+
+  @@index([createdById])
+  @@index([accessCode])
+  @@index([status])
+  @@map("tests")
+}
+
+/// 4. ربط الأسئلة بالاختبارات (TestQuestions): جدول وسيط للربط وترتيب النماذج
+model TestQuestion {
+  id         String   @id @default(uuid()) @db.Uuid
+  testId     String   @map("test_id") @db.Uuid
+  questionId String   @map("question_id") @db.Uuid
+  orderIndex Int      @default(0) @map("order_index")
+  weight     Decimal  @default(1.0) @db.Decimal(5, 2)
+
+  // العلاقات
+  test     Test         @relation(fields: [testId], references: [id], onDelete: Cascade)
+  question QuestionBank @relation(fields: [questionId], references: [id], onDelete: Cascade)
+
+  @@unique([testId, questionId])
+  @@index([testId])
+  @@index([questionId])
+  @@map("test_questions")
+}
+
+/// 5. جلسات اختبار الطالبات (StudentTestSessions): رصد سير الاختبار والمستوى النهائي CEFR
+model StudentTestSession {
+  id             String        @id @default(uuid()) @db.Uuid
+  studentId      String        @map("student_id") @db.Uuid
+  testId         String        @map("test_id") @db.Uuid
+  startedAt      DateTime      @default(now()) @map("started_at")
+  completedAt    DateTime?     @map("completed_at")
+  status         SessionStatus @default(IN_PROGRESS)
+
+  // نتائج الدرجات ومستويات المهارات الأربع المعتمدة وفق CEFR
+  totalScore     Decimal?      @map("total_score") @db.Decimal(5, 2)
+  cefrLevel      CefrLevel?    @map("cefr_level") // المستوى الكلي: A1, A2, B1, B2
+  listeningScore Decimal?      @map("listening_score") @db.Decimal(5, 2)
+  speakingScore  Decimal?      @map("speaking_score") @db.Decimal(5, 2)
+  readingScore   Decimal?      @map("reading_score") @db.Decimal(5, 2)
+  writingScore   Decimal?      @map("writing_score") @db.Decimal(5, 2)
+  aiSummaryNotes String?       @map("ai_summary_notes") @db.Text
+  certificateId  String?       @unique @map("certificate_id") @db.VarChar(64) // للتحقق عبر QR
+
+  // العلاقات
+  student User            @relation("StudentSessions", fields: [studentId], references: [id], onDelete: Cascade)
+  test    Test            @relation(fields: [testId], references: [id], onDelete: Cascade)
+  answers StudentAnswer[]
+
+  @@index([studentId])
+  @@index([testId])
+  @@index([status])
+  @@index([cefrLevel])
+  @@map("student_test_sessions")
+}
+
+/// 6. إجابات الطالبات (StudentAnswers): تسجيل الإجابات والملفات الصوتية ونتائج التصحيح الآلي
+model StudentAnswer {
+  id                 String   @id @default(uuid()) @db.Uuid
+  sessionId          String   @map("session_id") @db.Uuid
+  questionId         String   @map("question_id") @db.Uuid
+  selectedOption     String?  @map("selected_option") @db.VarChar(255)
+  textAnswer         String?  @map("text_answer") @db.Text // المقال المكتوب
+  audioRecordingUrl  String?  @map("audio_recording_url") @db.VarChar(512) // تسجيل الصوت S3/Supabase
+  audioTranscript    String?  @map("audio_transcript") @db.Text // التفريغ الصوتي الآلي (Whisper AI)
+  isCorrect          Boolean? @map("is_correct")
+  score              Decimal  @default(0.0) @db.Decimal(5, 2)
+  aiGradingMetadata Json?    @map("ai_grading_metadata") // تفاصيل النطق والطلاقة والنحو
+  feedback           String?  @db.Text
+  createdAt          DateTime @default(now()) @map("created_at")
+
+  // العلاقات
+  session  StudentTestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+  question QuestionBank       @relation(fields: [questionId], references: [id], onDelete: Restrict)
+
+  @@unique([sessionId, questionId])
+  @@index([sessionId])
+  @@index([questionId])
+  @@map("student_answers")
+}
