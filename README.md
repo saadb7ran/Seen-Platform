@@ -1,36 +1,45 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# منصة سين
 
-## Getting Started
+منصة تقييم عامة لاختبارات اللغة الإنجليزية. تشمل تسجيل الطالبات، أدوار إدارة ومعلمات، بنك أسئلة، جدولة اختبارات برمز دخول وQR، إجابات محفوظة، تصحيح موضوعي وآلي اختياري، ومراجعة بشرية وتقارير CEFR إرشادية.
 
-First, run the development server:
+## المتطلبات
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
-```
+- Node.js 20.6 أو أحدث وnpm.
+- PostgreSQL 14 أو أحدث.
+- مفتاح `SESSION_SECRET` عشوائي بطول 32 محرفًا أو أكثر.
+- اختياري: مفتاح OpenAI للتصحيح والتفريغ الصوتي.
+- اختياري: تخزين متوافق مع S3 لرفع التسجيلات الصوتية.
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## التطوير المحلي
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+1. ثبّت الاعتماديات: `npm install`.
+2. انسخ `.env.example` إلى `.env` وأدخل إعدادات PostgreSQL.
+3. أنشئ المخطط في قاعدة بيانات تطوير جديدة عبر `npm run db:deploy`.
+4. عيّن `PLATFORM_ADMIN_USERNAME` و`PLATFORM_ADMIN_PASSWORD` و`PLATFORM_ADMIN_NAME` في `.env` ثم نفّذ `npm run admin:create`. الأمر ينشئ أول مدير فقط، ويرفض استبدال حساب موجود.
+5. شغّل `npm run dev` وافتح `http://localhost:3000`.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+لا تستخدم `prisma db push` على الإنتاج. أنشئ ملفات migration وراجعها ثم طبّقها عبر `npm run db:deploy`.
 
-## Learn More
+## النشر على Vercel
 
-To learn more about Next.js, take a look at the following resources:
+1. اربط مستودع المشروع بمشروع Vercel واضبط إصدار Node.js على 20.6 أو أحدث.
+2. أضف متغيرات `.env.example` المطلوبة إلى إعدادات البيئة في Vercel. استخدم عنوان اتصال PostgreSQL المجمّع في `DATABASE_URL` وعنوان الاتصال المباشر في `DIRECT_URL` عند دعم مزود قاعدة البيانات لهما.
+3. طبّق migrations على قاعدة البيانات قبل تحويل الزيارات إلى الإصدار الجديد (`npm run db:deploy` من بيئة نشر موثوقة).
+4. أنشئ أول مدير مرة واحدة من أمر موثوق متصل بقاعدة بيانات الإنتاج، باستخدام متغيرات الحساب المؤقتة في بيئة العملية. لا تضع كلمة المرور في المستودع أو في سجل CI.
+5. اضبط CORS في S3 للسماح بأصل الموقع المنشور وطلبات `PUT` مع ترويسة `Content-Type`. التخزين خاص؛ يحتفظ التطبيق بمفتاح الملف فقط ويوقّع رابط القراءة لفترة قصيرة عند إرسال الصوت للتفريغ.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+يتم تشغيل التصحيح الآلي إذا كان `OPENAI_API_KEY` مضبوطًا. عند غياب المفتاح لا يدّعي النظام نجاح التصحيح: تحفظ الإجابات المفتوحة بحالة انتظار وتظهر في استوديو المراجعة ليعتمدها معلم/مدير. مفاتيح OpenAI وAWS وبيانات قاعدة البيانات خادمية ولا تستخدم بادئة `NEXT_PUBLIC_`.
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+## الأدوار والاختبارات
 
-## Deploy on Vercel
+- التسجيل العام ينشئ حساب طالبة فقط.
+- ينشئ مدير المنصة حسابات المعلمات من `/admin/users`.
+- ينشئ الفريق أسئلة واختبارات، ويحدد فترة الإتاحة والمدة والأسئلة، ثم يشارك رمز الاختبار أو QR.
+- تستطيع الطالبة حفظ إجاباتها واستئناف الجلسة. الإجابات الموضوعية تصحح آليًا، وتصحح المقالات والتسجيلات بواسطة OpenAI أو تنتظر المراجعة البشرية.
+- كل تقرير يحمل رقم تحقق عشوائيًا ويمكن طباعته. مستويات CEFR إرشادية وليست شهادة اعتماد رسمية.
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
+## الفحوص
 
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- `npm run lint`
+- `npx prisma validate`
+- `npm run build`

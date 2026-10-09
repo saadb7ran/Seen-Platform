@@ -153,6 +153,7 @@ model StudentTestSession {
   startedAt      DateTime      @default(now()) @map("started_at")
   completedAt    DateTime?     @map("completed_at")
   status         SessionStatus @default(IN_PROGRESS)
+  questionOrder  Json?         @map("question_order")
 
   // نتائج الدرجات ومستويات المهارات الأربع المعتمدة وفق CEFR
   totalScore     Decimal?      @map("total_score") @db.Decimal(5, 2)
