@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { useEffect, useState } from "react";
 import LogoutButton from "@/app/logout-button";
+import { readJsonResponse } from "@/lib/client-http";
 
 type ReviewAnswer = {
   questionId: string;
@@ -23,8 +24,7 @@ export default function AiScoringStudioPage() {
 
   async function load() {
     const response = await fetch("/api/admin/studio");
-    const data = await response.json() as { sessions?: ReviewSession[]; error?: string };
-    if (!response.ok) throw new Error(data.error ?? "تعذر تحميل التصحيحات.");
+    const data = await readJsonResponse<{ sessions?: ReviewSession[] }>(response, "تعذر تحميل التصحيحات.");
     setSessions(data.sessions ?? []);
     setGrades(Object.fromEntries((data.sessions ?? []).map((session) => [session.id, Object.fromEntries(session.answers.map((answer) => [
       answer.questionId,
@@ -54,8 +54,7 @@ export default function AiScoringStudioPage() {
           })),
         }),
       });
-      const data = await response.json() as { error?: string };
-      if (!response.ok) throw new Error(data.error ?? "تعذر اعتماد التصحيح.");
+      await readJsonResponse<{ session?: unknown }>(response, "تعذر اعتماد التصحيح.");
       await load();
     } catch (reason) {
       setError(reason instanceof Error ? reason.message : "تعذر اعتماد التصحيح.");

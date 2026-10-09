@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useState } from "react";
+import { readJsonResponse } from "@/lib/client-http";
 
 export default function StaffAccountsPage() {
   const [message, setMessage] = useState("");
@@ -18,8 +19,7 @@ export default function StaffAccountsPage() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(values),
       });
-      const data = await response.json() as { user?: { username: string }; error?: string };
-      if (!response.ok) throw new Error(data.error ?? "تعذر إنشاء الحساب.");
+      const data = await readJsonResponse<{ user?: { username: string } }>(response, "تعذر إنشاء الحساب.");
       setMessage(`تم إنشاء حساب المعلمة ${data.user?.username}.`);
       form.reset();
     } catch (reason) {

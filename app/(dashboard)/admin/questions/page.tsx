@@ -5,6 +5,7 @@ import { FormEvent, useEffect, useState } from "react";
 import QRCode from "qrcode";
 import Link from "next/link";
 import Image from "next/image";
+import { readJsonResponse } from "@/lib/client-http";
 
 type Question = {
   id: string;
@@ -36,9 +37,7 @@ const labels: Record<SkillType, string> = {
 
 async function requestJson<T>(url: string, init?: RequestInit): Promise<T> {
   const response = await fetch(url, init);
-  const result = await response.json() as T & { error?: string };
-  if (!response.ok) throw new Error(result.error ?? "تعذر تنفيذ العملية.");
-  return result;
+  return readJsonResponse<T>(response, "تعذر تنفيذ العملية.");
 }
 
 function ExamQr({ code }: { code: string }) {

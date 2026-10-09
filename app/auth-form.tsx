@@ -3,6 +3,7 @@
 import { FormEvent, useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import { readJsonResponse } from "@/lib/client-http";
 
 export default function AuthForm({ mode }: { mode: "login" | "register" }) {
   const router = useRouter();
@@ -24,8 +25,7 @@ export default function AuthForm({ mode }: { mode: "login" | "register" }) {
     const endpoint = isRegister ? "/api/auth/register" : "/api/auth/login";
     try {
       const response = await fetch(endpoint, { method: "POST", body: JSON.stringify(requestPayload), headers: { "Content-Type": "application/json" } });
-      const data = await response.json() as { error?: string; user?: { role: string } };
-      if (!response.ok) throw new Error(data.error ?? "تعذر تسجيل الدخول.");
+      const data = await readJsonResponse<{ user?: { role: string } }>(response, "تعذر تسجيل الدخول.");
       const next = new URLSearchParams(window.location.search).get("next");
       router.replace(next?.startsWith("/") && !next.startsWith("//") ? next : data.user?.role === "STUDENT" ? "/account" : "/admin/dashboard");
       router.refresh();

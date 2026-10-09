@@ -4,6 +4,7 @@ import { QuestionType, SkillType } from "@prisma/client";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
+import { readJsonResponse } from "@/lib/client-http";
 
 type ExamQuestion = {
   id: string;
@@ -17,8 +18,6 @@ type ExamQuestion = {
 };
 type ExamData = { id: string; title: string; durationMinutes: number; questionCount: number; questions: ExamQuestion[] };
 type Answers = Record<string, { selectedOption: string; textAnswer: string }>;
-type ApiError = { error?: string };
-
 const skillNames: Record<SkillType, string> = {
   LISTENING: "الاستماع",
   SPEAKING: "التحدث",
@@ -27,9 +26,7 @@ const skillNames: Record<SkillType, string> = {
 };
 
 async function responseJson<T>(response: Response) {
-  const data = await response.json() as T & ApiError;
-  if (!response.ok) throw new Error(data.error ?? "تعذر تنفيذ العملية.");
-  return data;
+  return readJsonResponse<T>(response, "تعذر تنفيذ العملية.");
 }
 
 export default function StudentExamPage() {
