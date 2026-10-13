@@ -1,3 +1,7 @@
+export const dynamic = 'force-dynamic';
+
+import React from 'react';
+// باقي الكود الخاص بصفحة التحقق...
 'use client';
 
 import React from 'react';
