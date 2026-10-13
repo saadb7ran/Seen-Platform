@@ -1,0 +1,114 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  ADMIN
+  EXAMINER
+  STUDENT
+}
+
+enum CEFRLevel {
+  A1
+  A2
+  B1
+  B2
+  C1
+  C2
+}
+
+enum SkillType {
+  READING
+  LISTENING
+  GRAMMAR
+  VOCABULARY
+}
+
+model User {
+  id            String         @id @default(uuid())
+  email         String         @unique
+  name          String
+  role          Role           @default(STUDENT)
+  avatarUrl     String?
+  createdAt     DateTime       @default(now())
+  updatedAt     DateTime       @updatedAt
+  testSessions  TestSession[]
+  certificates  Certificate[]
+}
+
+model QuestionBank {
+  id            String         @id @default(uuid())
+  skill         SkillType
+  cefrLevel     CEFRLevel
+  prompt        String
+  audioUrl      String?        // مخصص لمهارة الاستماع
+  passageText   String?        // مخصص لمهارة القراءة
+  options       Json?          // الخيارات للأسئلة
+  correctAnswer String         // التصحيح الآلي
+  explanation   String?
+  createdAt     DateTime       @default(now())
+  testQuestions TestQuestion[]
+}
+
+model Exam {
+  id            String         @id @default(uuid())
+  title         String
+  description   String?
+  durationMin   Int            @default(45)
+  isPublished   Boolean        @default(false)
+  createdAt     DateTime       @default(now())
+  questions     TestQuestion[]
+  sessions      TestSession[]
+}
+
+model TestQuestion {
+  id          String       @id @default(uuid())
+  examId      String
+  questionId  String
+  order       Int
+  exam        Exam         @relation(fields: [examId], references: [id], onDelete: Cascade)
+  question    QuestionBank @relation(fields: [questionId], references: [id])
+}
+
+model TestSession {
+  id          String       @id @default(uuid())
+  userId      String
+  examId      String
+  status      String       @default("IN_PROGRESS") // IN_PROGRESS, COMPLETED, TIMED_OUT
+  score       Float?
+  cefrResult  CEFRLevel?
+  startedAt   DateTime     @default(now())
+  completedAt DateTime?
+  responses   Response[]
+  user        User         @relation(fields: [userId], references: [id])
+  exam        Exam         @relation(fields: [examId], references: [id])
+  certificate Certificate?
+}
+
+model Response {
+  id             String      @id @default(uuid())
+  sessionId      String
+  questionId     String
+  userAnswer     String
+  isCorrect      Boolean?    
+  scoreAwarded   Float?
+  session        TestSession @relation(fields: [sessionId], references: [id], onDelete: Cascade)
+}
+
+model Certificate {
+  id               String       @id @default(uuid())
+  userId           String
+  sessionId        String       @unique
+  cefrLevel        CEFRLevel
+  verificationCode String       @unique // رمز التحقق الفريد الموثق
+  overallScore     Float
+  issuedAt         DateTime     @default(now())
+  
+  user             User         @relation(fields: [userId], references: [id])
+  session          TestSession  @relation(fields: [sessionId], references: [id])
+}
