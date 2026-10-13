@@ -1,168 +1,104 @@
-export const dynamic = 'force-dynamic';
-
-import React from 'react';
-// باقي الكود الخاص بصفحة التحقق...
 'use client';
+
+export const dynamic = 'force-dynamic';
 
 import React from 'react';
 import { ShieldCheck, Award, User, Calendar, FileText, Printer } from 'lucide-react';
 
 interface VerifyPageProps {
-  params: Promise<{
-    code: string;
-  }>;
+  params: Promise<{ code: string }>;
 }
 
-export default async function VerifyCertificatePage({ params }: VerifyPageProps) {
-  const resolvedParams = await params;
-  const code = resolvedParams.code ? resolvedParams.code.toUpperCase() : "SAMPLE";
+export default function VerifyCertificatePage({ params }: VerifyPageProps) {
+  // فك استجابة الـ params في Next.js 15+
+  const resolvedParams = React.use(params);
+  const code = resolvedParams?.code || 'SEEN-2026-X981';
 
-  const certificateData = {
-    code: code,
-    studentName: "سارة محمد العتيبي",
-    cefrLevel: "B2",
-    levelDescription: "Upper-Intermediate (مستوى متقدم متوسط)",
-    overallScore: "88%",
-    skills: {
-      reading: "90%",
-      listening: "85%",
-      grammar: "92%",
-      vocabulary: "85%"
-    },
-    issuedDate: "12 أكتوبر 2026",
-    issuer: "منصة سين لتحديد المستوى (Seen Platform)"
+  const handlePrint = () => {
+    window.print();
   };
 
   return (
-    <>
-      {/* CSS مخصص لضبط الطباعة وجعل الشهادة تملأ صفحة الـ PDF بالكامل بدون مساحات فارغة */}
-      <style jsx global>{`
-        @media print {
-          @page {
-            size: A4 portrait;
-            margin: 10mm;
-          }
-          body {
-            background-color: white !important;
-            color: black !important;
-            -webkit-print-color-adjust: exact;
-            print-color-adjust: exact;
-          }
-          .print\:hidden {
-            display: none !important;
-          }
-          .certificate-container {
-            width: 100% !important;
-            max-width: 100% !important;
-            border: 2px solid #0d9488 !important;
-            box-shadow: none !important;
-            margin: 0 !important;
-            padding: 20px !important;
-            page-break-after: avoid;
-            page-break-inside: avoid;
-          }
-        }
-      `}</style>
+    <main className="min-h-screen bg-slate-950 text-slate-100 flex flex-col justify-between p-6 print:bg-white print:text-black print:p-0">
+      
+      {/* Header bar - Hidden on print */}
+      <div className="max-w-4xl w-full mx-auto flex items-center justify-between mb-8 print:hidden">
+        <a href="/" className="text-xs font-semibold text-teal-400 hover:underline">
+          ← العودة لمنصة سين
+        </a>
+        <button
+          onClick={handlePrint}
+          className="px-5 py-2.5 bg-teal-600 hover:bg-teal-500 text-white font-bold rounded-xl text-xs flex items-center gap-2 transition-all shadow-lg cursor-pointer"
+        >
+          <Printer className="w-4 h-4" />
+          <span>طباعة / حفظ كـ PDF</span>
+        </button>
+      </div>
 
-      <main className="min-h-screen bg-slate-100 text-slate-800 flex flex-col justify-between p-4 md:p-8 selection:bg-teal-500 selection:text-white">
+      {/* Official Certificate Card */}
+      <div className="max-w-3xl w-full mx-auto bg-slate-900 border-2 border-teal-500/40 rounded-3xl p-10 shadow-2xl relative print:border-2 print:border-black print:shadow-none print:bg-white print:text-black">
         
-        {/* Top Action Bar (Hidden during print) */}
-        <div className="max-w-3xl w-full mx-auto flex justify-end mb-4 print:hidden">
-          <button
-            onClick={() => window.print()}
-            className="px-5 py-2.5 bg-teal-700 hover:bg-teal-800 text-white text-xs font-bold rounded-xl transition-all shadow-md flex items-center gap-2 cursor-pointer"
-          >
-            <Printer className="w-4 h-4" />
-            <span>طباعة الشهادة / حفظ PDF</span>
-          </button>
+        {/* Seal Badge */}
+        <div className="flex justify-between items-start mb-8">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-white print:text-black">
+              Seen <span className="text-teal-400 print:text-teal-700">Platform</span>
+            </h1>
+            <p className="text-xs text-slate-400 print:text-slate-600 mt-1">
+              وثيقة إثبات كفاءة معتمدة في اللغة الإنجليزية (CEFR)
+            </p>
+          </div>
+          <div className="w-16 h-16 rounded-2xl bg-teal-500/10 border border-teal-500/30 flex items-center justify-center text-teal-400 print:text-teal-700 print:border-teal-700">
+            <Award className="w-8 h-8" />
+          </div>
         </div>
 
-        {/* Certificate Box */}
-        <div className="certificate-container max-w-3xl w-full mx-auto my-auto bg-white border-2 border-teal-700/30 rounded-3xl p-6 md:p-10 shadow-2xl relative overflow-hidden">
-          
-          {/* Watermark effect */}
-          <div className="absolute inset-0 flex items-center justify-center opacity-[0.03] pointer-events-none select-none">
-            <span className="text-9xl font-black tracking-widest text-teal-900">SEEN</span>
-          </div>
-
-          {/* Verification Status Banner */}
-          <div className="flex items-center gap-4 bg-teal-50 border border-teal-200 p-4 rounded-2xl text-teal-800 mb-6">
-            <div className="p-2.5 bg-teal-600 text-white rounded-xl">
-              <ShieldCheck className="w-6 h-6 flex-shrink-0" />
-            </div>
-            <div>
-              <h1 className="font-bold text-base text-teal-900">وثيقة رسمية معتمدة وموثقة</h1>
-              <p className="text-xs text-teal-700 mt-0.5">تم التحقق من صحة هذه الشهادة برمجياً من السجلات الرقمية لمنصة سين</p>
-            </div>
-          </div>
-
-          {/* Header Branding */}
-          <div className="flex flex-col md:flex-row items-center justify-between border-b-2 border-slate-200 pb-5 mb-6 gap-4 text-center md:text-right">
-            <div>
-              <h2 className="text-2xl font-black tracking-tight text-slate-900">Seen <span className="text-teal-600">Platform</span></h2>
-              <p className="text-xs font-medium text-slate-500 mt-1">منصة تقييم واختبارات اللغة الإنجليزية وفق الإطار الأوروبي (CEFR)</p>
-            </div>
-            <div className="px-4 py-2 bg-slate-100 border border-slate-200 rounded-xl text-xs font-mono text-slate-700 flex items-center gap-2">
-              <FileText className="w-4 h-4 text-teal-600" />
-              <span>ID: {certificateData.code}</span>
-            </div>
-          </div>
-
-          {/* Main Details Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-center">
-              <span className="text-slate-500 text-xs flex items-center gap-1.5 mb-1 font-medium"><User className="w-4 h-4 text-teal-600"/> اسم الحاصلة على الشهادة</span>
-              <span className="font-extrabold text-lg text-slate-900">{certificateData.studentName}</span>
-            </div>
-
-            <div className="bg-slate-50 p-4 rounded-2xl border border-slate-200 flex flex-col justify-center">
-              <span className="text-slate-500 text-xs flex items-center gap-1.5 mb-1 font-medium"><Award className="w-4 h-4 text-teal-600"/> المستوى المعياري المكتسب (CEFR)</span>
-              <div className="flex items-center gap-3">
-                <span className="font-black text-xl text-teal-700">{certificateData.cefrLevel}</span>
-                <span className="text-xs font-semibold text-slate-700 bg-teal-100 px-2.5 py-0.5 rounded-lg border border-teal-200">{certificateData.levelDescription}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Skills Breakdown */}
-          <div className="bg-slate-50 p-5 rounded-2xl border border-slate-200 mb-6">
-            <span className="text-xs font-bold text-slate-700 block mb-3">تفاصيل تقييم المهارات اللغوية:</span>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-              <div className="bg-white p-3 rounded-xl text-center border border-slate-200 shadow-sm">
-                <span className="block text-xs text-slate-500 font-medium">القراءة (Reading)</span>
-                <span className="block font-black text-teal-700 text-base mt-1">{certificateData.skills.reading}</span>
-              </div>
-              <div className="bg-white p-3 rounded-xl text-center border border-slate-200 shadow-sm">
-                <span className="block text-xs text-slate-500 font-medium">الاستماع (Listening)</span>
-                <span className="block font-black text-teal-700 text-base mt-1">{certificateData.skills.listening}</span>
-              </div>
-              <div className="bg-white p-3 rounded-xl text-center border border-slate-200 shadow-sm">
-                <span className="block text-xs text-slate-500 font-medium">القواعد (Grammar)</span>
-                <span className="block font-black text-teal-700 text-base mt-1">{certificateData.skills.grammar}</span>
-              </div>
-              <div className="bg-white p-3 rounded-xl text-center border border-slate-200 shadow-sm">
-                <span className="block text-xs text-slate-500 font-medium">المفردات (Vocabulary)</span>
-                <span className="block font-black text-teal-700 text-base mt-1">{certificateData.skills.vocabulary}</span>
-              </div>
-            </div>
-          </div>
-
-          {/* Footer info inside card */}
-          <div className="flex flex-col sm:flex-row items-center justify-between text-xs text-slate-600 border-t border-slate-200 pt-4 gap-2">
-            <span className="flex items-center gap-1.5 font-medium"><Calendar className="w-4 h-4 text-teal-600" /> تاريخ الإصدار: {certificateData.issuedDate}</span>
-            <span className="text-teal-800 font-bold bg-teal-50 px-3 py-1 rounded-lg border border-teal-200">الدرجة الكلية: {certificateData.overallScore}</span>
-          </div>
-
-        </div>
-
-        {/* Global Footer with Design Attribution */}
-        <footer className="w-full text-center py-6 border-t border-slate-200 text-xs text-slate-600 mt-8 flex flex-col items-center gap-1.5 print:hidden">
-          <p>جميع الحقوق محفوظة © 2026 - منصة سين لتحديد مستوى اللغة الإنجليزية (CEFR)</p>
-          <p className="text-teal-700 font-bold bg-white px-4 py-1.5 rounded-full border border-slate-200 shadow-sm">
-            تصميم وتطوير: الأستاذ سعد القرني
+        {/* Certificate Body */}
+        <div className="space-y-6 text-center my-10">
+          <p className="text-xs text-slate-400 print:text-slate-600 uppercase tracking-widest">
+            Official Assessment Certificate / شهادة تقييم رسمية
           </p>
-        </footer>
-      </main>
-    </>
+          <p className="text-sm text-slate-300 print:text-slate-700">تشهد منصة سين بأن المختبر/ة:</p>
+          <h2 className="text-2xl font-black text-white print:text-black">سارة محمد العتيبي</h2>
+          <p className="text-sm text-slate-300 print:text-slate-700">
+            قد أتم/ت اختبار تحديد المستوى المعياري وحقق/ت النتيجة التالية:
+          </p>
+
+          <div className="inline-flex items-center gap-4 bg-slate-950 border border-slate-800 px-8 py-4 rounded-2xl print:bg-slate-100 print:border-slate-300">
+            <div>
+              <span className="block text-[10px] text-slate-400 print:text-slate-600">المستوى المحقق</span>
+              <span className="text-3xl font-black text-teal-400 print:text-teal-700">B2</span>
+            </div>
+            <div className="w-px h-8 bg-slate-800 print:bg-slate-300" />
+            <div>
+              <span className="block text-[10px] text-slate-400 print:text-slate-600">النسبة المئوية</span>
+              <span className="text-2xl font-bold text-white print:text-black">88%</span>
+            </div>
+          </div>
+        </div>
+
+        {/* Verification Metadata */}
+        <div className="border-t border-slate-800 print:border-slate-300 pt-6 grid grid-cols-2 gap-4 text-xs">
+          <div>
+            <span className="block text-[10px] text-slate-500 print:text-slate-600 mb-1">رمز التحقق الفريد:</span>
+            <span className="font-mono font-bold text-teal-400 print:text-black">{code}</span>
+          </div>
+          <div className="text-left dir-ltr">
+            <span className="block text-[10px] text-slate-500 print:text-slate-600 mb-1">حالة التوثيق:</span>
+            <span className="inline-flex items-center gap-1 text-emerald-400 print:text-emerald-700 font-bold">
+              <ShieldCheck className="w-3.5 h-3.5" /> موثوقة ومسجلة
+            </span>
+          </div>
+        </div>
+
+        {/* Footer Attribution */}
+        <div className="mt-8 pt-4 border-t border-slate-800/60 print:border-slate-200 text-center text-[10px] text-slate-500 print:text-slate-600">
+          تصميم وتطوير المنصة: الأستاذ سعد القرني
+        </div>
+
+      </div>
+
+      <div className="h-4" />
+    </main>
   );
 }
