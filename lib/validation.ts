@@ -61,9 +61,7 @@ export const aiGenerationSchema = z.object({
   level: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
 });
 
-export const generatedQuestionSchema = z.object({
-  skill: z.enum(['READING', 'LISTENING', 'GRAMMAR', 'VOCABULARY']),
-  cefrLevel: z.enum(['A1', 'A2', 'B1', 'B2', 'C1', 'C2']),
+export const generatedQuestionContentSchema = z.object({
   passage: z.string().trim().min(1).max(6000).nullable(),
   prompt: z.string().trim().min(1).max(4000),
   options: z.array(z.string().trim().min(1).max(500)).min(2).max(8),
@@ -75,14 +73,6 @@ export const generatedQuestionSchema = z.object({
       code: 'custom',
       path: ['correctAnswer'],
       message: 'The correct answer must match one of the options.',
-    });
-  }
-
-  if ((question.skill === 'READING') !== (question.passage !== null)) {
-    context.addIssue({
-      code: 'custom',
-      path: ['passage'],
-      message: 'Only reading questions must include a passage.',
     });
   }
 });

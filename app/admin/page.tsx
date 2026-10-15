@@ -378,6 +378,9 @@ export default function AdminDashboardPage() {
   };
 
   const handleDeleteQuestion = async (id: string) => {
+    if (!window.confirm('سيُحذف السؤال من بنك الأسئلة والاختبارات المرتبطة به. لا يمكن حذفه أثناء وجود اختبار جارٍ يستخدمه. هل تريد المتابعة؟')) {
+      return;
+    }
     setQuestionError('');
     try {
       const response = await fetch(`/api/admin/questions/${encodeURIComponent(id)}`, {
