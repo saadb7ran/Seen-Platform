@@ -1,26 +1,77 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --holst-midnight: #0D1B2A;
+  --holst-navy: #1B263B;
+  --holst-slate: #415A77;
+  --holst-sage: #778D7A;
+  --holst-sand: #D4C4A8;
+  --holst-cream: #F4F1DE;
+
+  --bg-primary: var(--holst-midnight);
+  --bg-secondary: var(--holst-navy);
+  --card-bg: var(--holst-navy);
+  --text-primary: var(--holst-cream);
+  --text-secondary: var(--holst-sand);
+  --text-muted: var(--holst-sage);
+  --accent-color: var(--holst-sage);
+  --accent-hover: var(--holst-sand);
+  --border-color: var(--holst-slate);
+
+  color-scheme: dark;
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-holst-midnight: var(--holst-midnight);
+  --color-holst-navy: var(--holst-navy);
+  --color-holst-slate: var(--holst-slate);
+  --color-holst-sage: var(--holst-sage);
+  --color-holst-sand: var(--holst-sand);
+  --color-holst-cream: var(--holst-cream);
+
+  --color-background: var(--bg-primary);
+  --color-foreground: var(--text-primary);
+  --color-card: var(--card-bg);
+  --color-accent: var(--accent-color);
+  --color-border: var(--border-color);
+  --color-text-secondary: var(--text-secondary);
+  --color-text-muted: var(--text-muted);
+
+  --color-slate-950: var(--holst-midnight);
+  --color-slate-900: var(--holst-navy);
+  --color-slate-800: var(--holst-slate);
+  --color-slate-700: var(--holst-sage);
+  --color-slate-500: var(--holst-sage);
+  --color-slate-400: var(--holst-sage);
+  --color-slate-300: var(--holst-sand);
+  --color-slate-200: var(--holst-cream);
+  --color-slate-100: var(--holst-cream);
+  --color-slate-50: var(--holst-cream);
+
+  --color-teal-950: var(--holst-midnight);
+  --color-teal-800: var(--holst-slate);
+  --color-teal-600: var(--holst-slate);
+  --color-teal-500: var(--holst-sage);
+  --color-teal-400: var(--holst-sand);
+  --color-teal-300: var(--holst-sand);
+
+  --color-emerald-600: var(--holst-slate);
+  --color-emerald-500: var(--holst-sage);
+  --color-emerald-400: var(--holst-sage);
+
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+body {
+  min-height: 100%;
+  background: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+@media print {
+  :root {
+    color-scheme: light;
+  }
 }

@@ -32,28 +32,28 @@ export const SeenLogo: React.FC<LogoProps> = ({
         {/* Book Base */}
         <path
           d="M20 75C20 75 35 68 50 75C65 68 80 75 80 75V25C80 25 65 18 50 25C35 18 20 25 20 25V75Z"
-          stroke="#1E3A8A"
+          stroke="#1B263B"
           strokeWidth="6"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M50 25V75"
-          stroke="#1E3A8A"
+          stroke="#1B263B"
           strokeWidth="5"
           strokeLinecap="round"
         />
         {/* S Symbol with Arrow & Checkmark */}
         <path
           d="M38 52L47 61L68 35"
-          stroke="#10B981"
+          stroke="#778D7A"
           strokeWidth="8"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M62 30L72 32L70 42"
-          stroke="#10B981"
+          stroke="#778D7A"
           strokeWidth="7"
           strokeLinecap="round"
           strokeLinejoin="round"
@@ -63,7 +63,7 @@ export const SeenLogo: React.FC<LogoProps> = ({
   }
 
   return (
-    <div className={`flex items-center gap-3 ${className}`}>
+    <div className={`flex items-center gap-3 ${className}`} style={{ width }}>
       <svg
         width={height}
         height={height}
@@ -73,27 +73,27 @@ export const SeenLogo: React.FC<LogoProps> = ({
       >
         <path
           d="M15 78C15 78 32 70 50 78C68 70 85 78 85 78V22C85 22 68 14 50 22C32 14 15 22 15 22V78Z"
-          stroke="#0F172A"
+          stroke="#0D1B2A"
           strokeWidth="7"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M50 22V78"
-          stroke="#0F172A"
+          stroke="#0D1B2A"
           strokeWidth="6"
           strokeLinecap="round"
         />
         <path
           d="M36 50L46 60L68 32"
-          stroke="#0D9488"
+          stroke="#778D7A"
           strokeWidth="9"
           strokeLinecap="round"
           strokeLinejoin="round"
         />
         <path
           d="M61 27L73 29L71 41"
-          stroke="#0D9488"
+          stroke="#778D7A"
           strokeWidth="8"
           strokeLinecap="round"
           strokeLinejoin="round"

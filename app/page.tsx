@@ -1,5 +1,6 @@
 import Link from 'next/link';
-import { BookOpen, Award, Sparkles, ShieldCheck, ArrowLeft, CheckCircle2, Headphones, FileText } from 'lucide-react';
+import { BookOpen, Sparkles, ShieldCheck, ArrowLeft, Headphones, FileText } from 'lucide-react';
+import AuthNavigation from '@/components/auth/auth-navigation';
 
 export default function Home() {
   return (
@@ -18,8 +19,9 @@ export default function Home() {
         </div>
 
         <div className="flex items-center gap-4">
+          <AuthNavigation />
           <Link 
-            href="/verify/SEEN-2026-SAMPLE"
+            href="/verify"
             className="text-xs font-medium text-slate-300 hover:text-teal-400 transition-colors hidden sm:inline-flex items-center gap-1.5"
           >
             <ShieldCheck className="w-4 h-4 text-teal-400" />
@@ -83,7 +85,7 @@ export default function Home() {
             <ArrowLeft className="w-4 h-4" />
           </Link>
           <Link
-            href="/verify/SEEN-2026-SAMPLE"
+            href="/verify"
             className="px-8 py-3.5 bg-slate-900 hover:bg-slate-800 text-slate-200 font-bold rounded-xl border border-slate-800 transition-all"
           >
             التحقق من وثيقة
